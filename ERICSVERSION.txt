@@ -1,0 +1,145 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class GameManager : MonoBehaviour
+{
+    public List<GameObject> pathRight = new List<GameObject>();
+    public List<GameObject> pathLeft = new List<GameObject>();
+    public Material onMaterialGreen;
+    public Material onMaterialPurple;
+    public Material offMaterial;
+    public static GameManager instance = null;
+    bool forwardLeft = true;
+    bool forwardRight = true;
+    int offset = 2;
+    public GameObject currBallRight;
+    public GameObject currBallLeft;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        if (instance == null)
+            instance = this;
+        else if (instance != this)
+            Destroy(gameObject);
+        DontDestroyOnLoad(gameObject);
+        currBallRight = pathRight[0];
+        currBallLeft = pathLeft[0];
+        Debug.Log("Hello");
+    }
+
+    public void NextBall(GameObject gameObject)
+    {
+        if (gameObject != null)
+        {
+            //gameObject.GetComponent<Renderer>().material = offMaterial;
+            int rightIndex = pathRight.IndexOf(gameObject);
+            int leftIndex = pathLeft.IndexOf(gameObject);
+
+            bool hitRight = true;
+            if (leftIndex != -1)
+                hitRight = false;
+
+            int intForward = 1;
+            if (forwardRight || forwardLeft)
+            {
+                if (hitRight)
+                    intForward = -1;
+            }
+
+            if (hitRight)
+            {
+                GameObject prevballRight = pathRight[rightIndex + intForward];
+                prevballRight.GetComponent<Renderer>().material = offMaterial;
+            }
+            else
+            {
+                GameObject prevballLeft = pathRight[leftIndex + intForward];
+                prevballLeft.GetComponent<Renderer>().material = offMaterial;
+            }
+
+            if (rightIndex == pathRight.Count - 1)
+            {
+                forwardRight = false;
+                offset = -2;
+            }
+            else if (rightIndex == 0)
+            {
+                forwardRight = true;
+                offset = 2;
+            }
+            if (leftIndex == pathLeft.Count - 1)
+            {
+                forwardLeft = false;
+                offset = -2;
+            }
+            else if (leftIndex == 0)
+            {
+                forwardLeft = true;
+                offset = 2;
+            }
+
+            bool validHitLeft = false;
+            bool validHitRight = false;
+
+            if (rightIndex != -1 && forward && gameObject == currBallRight && (rightIndex + 2 < pathRight.Count))
+            {
+                GameObject nextball = pathRight[rightIndex + offset];
+                nextball.GetComponent<Renderer>().material = onMaterialGreen;
+                validHitRight = true;
+            }
+            else if (rightIndex != -1 && !forward && gameObject == currBallRight && (rightIndex - 2 >= 0))
+            {
+                GameObject nextball = pathRight[rightIndex + offset];
+                nextball.GetComponent<Renderer>().material = onMaterialPurple;
+                validHitRight = true;
+            }
+
+            if (leftIndex != -1 && forward && gameObject == currBallLeft && (leftIndex + 2 < pathLeft.Count))
+            {
+                GameObject nextball = pathLeft[leftIndex + offset];
+                nextball.GetComponent<Renderer>().material = onMaterialGreen;
+                validHitLeft = true;
+            }
+            else if (leftIndex != -1 && !forward && gameObject == currBallLeft && (leftIndex - 2 >= 0))
+            {
+                GameObject nextball = pathLeft[leftIndex + offset];
+                nextball.GetComponent<Renderer>().material = onMaterialPurple;
+                validHitLeft = true;
+            }
+
+            if (validHitRight)
+            {
+                if (rightIndex == pathRight.Count - 1)
+                    currBallRight = pathRight[pathRight.Count - 2];
+                else if (rightIndex == 0)
+                    currBallRight = pathRight[1];
+                else
+                {
+                    currBallRight = pathRight[rightIndex - 1];
+                    if (forward)
+                        currBallRight = pathRight[rightIndex + 1];
+                }
+            }
+            if (validHitLeft)
+            {
+                if (leftIndex == pathLeft.Count - 1)
+                    currBallLeft = pathLeft[pathLeft.Count - 2];
+                else if (leftIndex == 0)
+                    currBallLeft = pathLeft[1];
+                else
+                {
+                    currBallLeft = pathLeft[leftIndex - 1];
+                    if (forward)
+                        currBallLeft = pathLeft[leftIndex + 1];
+                }
+            }
+        }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+}
